@@ -24,6 +24,19 @@
             <input type="url" class="form-control" id="image" name="image" value="{{ old('image', $project->image ?? '') }}">
         </div>
 
+
+        <div class="mb-3">
+            <label for="type_id" class="form-label">Tipo di Progetto</label>
+            <select name="type_id" id="type_id" class="form-control">
+                <option value="">Seleziona il tipo di progetto</option>
+                @foreach($types as $type)
+                    <option value="{{ $type->id }}" {{ old('type_id', $project->type_id ?? '') == $type->id ? 'selected' : '' }}>
+                        {{ $type->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
         <button type="submit" class="btn btn-success">{{ isset($project) ? 'Aggiorna' : 'Crea' }}</button>
     </form>
 </div>
