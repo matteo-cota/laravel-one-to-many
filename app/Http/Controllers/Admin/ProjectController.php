@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
+use App\Models\Type;
+use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
@@ -11,22 +13,18 @@ class ProjectController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    $projects = Project::all();
-    return view('projects.index', compact('projects'));
-}
-
-
+    {
+        $projects = Project::with('type')->get(); // Include anche il tipo associato
+        return view('admin.projects.index', compact('projects'));
+    }
 
     /**
      * Show the form for creating a new resource.
      */
-    // Metodo per creare un nuovo progetto
     public function create()
     {
         $types = Type::all();
-        return view('projects.create', compact('types'));
-
+        return view('admin.projects.create', compact('types'));
     }
 
     /**
@@ -34,7 +32,19 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'nullable|url',
+            'type_id' => 'nullable|exists:types,id'
+        ]);
+
+
+        $project = new Project($request->all());
+        $project->save();
+
+        return redirect()->route('admin.projects.index')->with('success', 'Progetto creato con successo');
     }
 
     /**
@@ -43,9 +53,8 @@ class ProjectController extends Controller
     public function show($id)
     {
         $project = Project::with('type')->findOrFail($id);
-        return view('projects.show', compact('project'));
+        return view('admin.projects.show', compact('project'));
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -59,16 +68,28 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Project $project)
     {
-        //
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'nullable|url',
+            'type_id' => 'nullable|exists:types,id'
+        ]);
+
+        // Aggiornamento del progetto
+        $project->update($request->all());
+
+        return redirect()->route('admin.projects.index')->with('success', 'Progetto aggiornato con successo');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Project $project)
     {
-        //
+        $project->delete();
+        return redirect()->route('admin.projects.index')->with('success', 'Progetto eliminato con successo');
     }
 }
